@@ -1,18 +1,13 @@
 import express from 'express';
+import router from './routes/index.js';
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT:number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
 app.use(express.json());
 
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK' });
-})
-
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-})
+app.use('/', router);
 
 app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`);

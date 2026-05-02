@@ -38,7 +38,7 @@ router.post('/', (req: Request, res: Response) => {
 
 /**
  * PUT /api/worker
- * Request Body: { numWorkers: number, dbName: string, duration: number }
+ * Request Body: { workerManagerId: string, numWorkers: number, dbName: string, duration: number }
  * Response: { message: string }
  */
 router.put('/', (req: Request, res: Response) => {

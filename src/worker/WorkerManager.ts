@@ -166,7 +166,7 @@ class WorkerManager {
 
         // worker 생성
         for (let i = 0; i < this.numWorkers; i++) {
-            const worker = new DbLoadWorker(this.dbName, `${this.id}-worker-${i}`, this.durationMs);
+            const worker = new DbLoadWorker(this.dbName, this.id, `${this.id}-worker-${i}`, this.durationMs);
             this.workers.push(worker);
         }
     }

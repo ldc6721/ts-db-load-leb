@@ -1,6 +1,10 @@
 import { parentPort, workerData } from 'node:worker_threads';
+import { insertLoadSample } from '../database/index.js';
+
+let sequence: number = 0;
 
 type WorkerData = {
+    group_id: string;
     id: string;
     dbName: string;
     durationMs: number;
@@ -24,8 +28,9 @@ async function run(): Promise<void> {
         workerId: data.id
     });
 
+    // 주어진 duration 동안 샘플 데이터를 삽입하는 루프
     while (!stop && Date.now() - startedAt < data.durationMs) {
-        // TO-DO: DB load 작업 수행
+        await insertLoadSample(data.dbName, data.id, data.group_id, sequence++);
     }
 
     parentPort?.postMessage({

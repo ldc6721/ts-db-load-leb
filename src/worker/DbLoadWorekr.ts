@@ -31,9 +31,9 @@ class DbLoadWorker {
         }
     }
 
-    clean: () => void = () => {
+    clean: () => Promise<void> = async () => {
         if (this.thread) {
-            this.thread.terminate();
+            await this.thread.terminate();
             this.thread = null;
         }
     }

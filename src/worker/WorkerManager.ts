@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { WorkerManagerStatus, WorkerManagerInfo } from './types.js';
-import DbLoadWorker from './DbLoadWorekr.js'
+import DbLoadWorker from './DbLoadWorekr.js';
+import { cleanUpSamples } from '../database/index.js';
 
 class WorkerManager {
     id: string;
@@ -108,12 +109,24 @@ class WorkerManager {
     clean: () => void = () => {
         this.refreshAccessTime();
 
+        this.status = WorkerManagerStatus.CLEANING;
+
+        const promises = [];
         for (const worker of this.workers) {
             // worker 리소스 정리
-            worker.clean();
+            promises.push(worker.clean());
         }
 
         this.workers = [];
+
+        Promise.all(promises).then(() => {
+            // db 리소스 정리. 안정성을 위해 worker 정리가 끝난 후에 db 리소스 정리
+            cleanUpSamples(this.dbName, this.id).catch((error: unknown) => {
+                console.error(`Error cleaning up samples for group_id ${this.id}:`, error instanceof Error ? error.message : 'Unknown error');
+            }).finally(() => {
+                this.status = WorkerManagerStatus.READY;
+            });
+        });
     }
 
     /**

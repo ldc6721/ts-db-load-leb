@@ -5,7 +5,8 @@
 const WorkerManagerStatus = {
     READY: 'ready',
     RUNNING: 'running',
-    STOPPED: 'stopped'
+    STOPPED: 'stopped',
+    CLEANING: 'cleaning',
 } as const;
 
 type WorkerManagerStatus = typeof WorkerManagerStatus[keyof typeof WorkerManagerStatus];

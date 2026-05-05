@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { createWorkerManager, getWorkerManagerList, updateWorkerManager, stopWorkerManager, deleteWorkerManager } from '../worker/index.js';
+import { createWorkerManager, getWorkerManagerList, updateWorkerManager, startWorkerManager, stopWorkerManager, cleanWorkerManager, deleteWorkerManager } from '../worker/index.js';
 
 const router = Router();
 
@@ -63,6 +63,69 @@ router.put('/', (req: Request, res: Response) => {
     }
 
     res.status(200).json({ message: 'Worker updated' });
+});
+
+/**
+ * PUT /api/worker/start
+ * Request Body: { workerManagerId: string }
+ * Response: { message: string }
+ * worker manager 시작
+ */
+router.put('/start', (req: Request, res: Response) => {
+    const { workerManagerId } = req.body;
+
+    if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
+        return res.status(400).json({ message: 'Invalid worker manager ID' });
+    }
+
+    const success = startWorkerManager(workerManagerId);
+    if (!success) {
+        return res.status(404).json({ message: 'Worker manager not found' });
+    }
+
+    res.status(200).json({ message: 'Worker started' });
+});
+
+/**
+ * PUT /api/worker/stop
+ * Request Body: { workerManagerId: string }
+ * Response: { message: string }
+ * worker manager 중지
+ */
+router.put('/stop', (req: Request, res: Response) => {
+    const { workerManagerId } = req.body;
+    
+    if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
+        return res.status(400).json({ message: 'Invalid worker manager ID' });
+    }
+
+    const success = stopWorkerManager(workerManagerId);
+    if (!success) {
+        return res.status(404).json({ message: 'Worker manager not found' });
+    }
+
+    res.status(200).json({ message: 'Worker stopped' });
+});
+
+/**
+ * PUT /api/worker/clean
+ * Request Body: { workerManagerId: string }
+ * Response: { message: string }
+ * worker manager 리소스 정리
+ */
+router.put('/clean', (req: Request, res: Response) => {
+    const { workerManagerId } = req.body;
+
+    if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
+        return res.status(400).json({ message: 'Invalid worker manager ID' });
+    }
+
+    const success = cleanWorkerManager(workerManagerId);
+    if (!success) {
+        return res.status(404).json({ message: 'Worker manager not found' });
+    }
+    
+    res.status(200).json({ message: 'Worker cleaned' });
 });
 
 /**

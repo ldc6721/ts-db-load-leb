@@ -59,6 +59,22 @@ export function updateWorkerManager(workerManagerId: string, numWorkers: number,
 }
 
 /**
+ * worker manager 시작
+ * @param workerManagerId 
+ * @returns 
+ */
+export function startWorkerManager(workerManagerId: string): boolean {
+    const workerManager = getWorkerManager(workerManagerId);
+    if (!workerManager) {
+        return false;
+    }
+
+    workerManager.start();
+    return true;
+}
+
+
+/**
  * worker manager 중지
  * @returns 
  */
@@ -69,6 +85,22 @@ export function stopWorkerManager(workerManagerId: string): boolean {
     }
 
     workerManager.stop();
+    return true;
+}
+
+/**
+ * worker manager 리소스 정리
+ * @param workerManagerId 
+ * @returns 
+ */
+export function cleanWorkerManager(workerManagerId: string): boolean {
+    const workerManager = getWorkerManager(workerManagerId);
+    if (!workerManager) {
+        return false;
+    }
+
+    workerManager.stop();
+    workerManager.clean();
     return true;
 }
 

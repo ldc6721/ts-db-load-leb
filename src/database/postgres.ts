@@ -15,17 +15,36 @@ class PostgresDB {
     }
 
     // method
+    public async getDistribution(): Promise<{ group_id: string, count: number }[]> {
+        await this.connect();
+
+        if (this.pool) {
+            // group_id 별로 샘플 데이터 개수 조회
+            const query = 'SELECT group_id, COUNT(*) AS count FROM sample_data GROUP BY group_id';
+            const result = await this.pool.query(query);
+            return result.rows.map(row => ({ group_id: row.group_id, count: parseInt(row.count, 10) }));
+        }
+        return [];
+    }
+
     public async insertSampleData(worker_id: string, group_id: string, sequence: number): Promise<void> {
-        // to-do: PostgreSQL에 샘플 데이터 삽입 로직
         await this.connect();
         
         if (this.pool) {
-            // worker_id, group_id, sequence, created_at
-            const query = 'INSERT INTO sample_data (worker_id, group_id, sequence, created_at) VALUES ($1, $2, $3, NOW())';
-            await this.pool.query(query, [worker_id, group_id, sequence]);
+            // id, worker_id, group_id, sequence, created_at
+            const query = 'INSERT INTO sample_data (id, worker_id, group_id, sequence, created_at) VALUES ($1, $2, $3, $4, NOW())';
+            await this.pool.query(query, [`${worker_id}_${sequence}`, worker_id, group_id, sequence]);
         }
     }
-           
+
+    public async cleanupSamples(group_id: string): Promise<void> {
+        await this.connect();
+
+        if (this.pool) {
+            const query = 'DELETE FROM sample_data WHERE group_id = $1';
+            await this.pool.query(query, [group_id]);
+        }
+    }
 
     // private
     private async connect(): Promise<void> {

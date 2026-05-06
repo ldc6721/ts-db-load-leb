@@ -5,13 +5,15 @@ class DbLoadWorker {
     group_id: string;
     id: string;
     durationMs: number;
+    private onDone: () => void;
     private thread: Worker | null;
 
-    constructor(dbName: string, group_id: string, id: string, durationMs: number) {
+    constructor(dbName: string, group_id: string, id: string, durationMs: number, onDone: () => void) {
         this.dbName = dbName;
         this.group_id = group_id;
         this.id = id;
         this.durationMs = durationMs;
+        this.onDone = onDone;
         this.thread = null;
     }
 
@@ -22,6 +24,10 @@ class DbLoadWorker {
 
         this.thread.on('message', (message) => {
             console.log(`Worker ${this.id} message:`, message);
+
+            if (message.type === 'done') {
+                this.onDone();
+            }
         });
     }
 

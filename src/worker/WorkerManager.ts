@@ -13,6 +13,7 @@ class WorkerManager {
     elapsedTime: number;
     accessTime: Date;
     startedAt: Date | null;
+    completedWorkerCount: number;
 
     /**
      * worker process
@@ -29,6 +30,7 @@ class WorkerManager {
         this.elapsedTime = 0;
         this.accessTime = new Date();
         this.startedAt = null;
+        this.completedWorkerCount = 0;
 
         // create worker
         this.createWorkers();
@@ -45,6 +47,7 @@ class WorkerManager {
         }
 
         this.elapsedTime = 0;
+        this.completedWorkerCount = 0;
         this.startedAt = new Date();
         this.refreshAccessTime();
 
@@ -96,6 +99,7 @@ class WorkerManager {
         this.dbName = dbName;
         this.durationMs = duration * 1000; // duration을 밀리초 단위로 변환
         this.elapsedTime = 0;
+        this.completedWorkerCount = 0;
         this.startedAt = null;
         this.status = WorkerManagerStatus.READY;
 
@@ -179,9 +183,25 @@ class WorkerManager {
 
         // worker 생성
         for (let i = 0; i < this.numWorkers; i++) {
-            const worker = new DbLoadWorker(this.dbName, this.id, `${this.id}-worker-${i}`, this.durationMs);
+            const worker = new DbLoadWorker(this.dbName, this.id, `${this.id}-worker-${i}`, this.durationMs, this.handleWorkerDone);
             this.workers.push(worker);
         }
+    }
+
+    private handleWorkerDone: () => void = () => {
+        if (this.status !== WorkerManagerStatus.RUNNING) {
+            return;
+        }
+
+        this.completedWorkerCount++;
+
+        if (this.completedWorkerCount < this.workers.length) {
+            return;
+        }
+
+        this.refreshElapsedTime();
+        this.status = WorkerManagerStatus.STOPPED;
+        this.startedAt = null;
     }
 }
 

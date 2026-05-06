@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import workerRouter from './worker.js';
+import databaseRouter from './database.js';
 
 const router = Router();
 
@@ -14,5 +15,8 @@ router.get('/', (req: Request, res: Response) => {
 
 // worker
 router.use('/api/worker', workerRouter);
+
+// database
+router.use('/api/database', databaseRouter);
 
 export default router;

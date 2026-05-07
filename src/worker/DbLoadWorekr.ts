@@ -1,5 +1,14 @@
 import { Worker } from 'node:worker_threads';
 
+/**
+ * dev 모드에서 파일 경로 문제를 해결하기 위해 import.meta.url을 활용하여 런너 스크립트의 path 동적 생성
+ * @returns {URL}
+ */
+function getRunnerUrl(): URL {
+    const runnerFileName = import.meta.url.endsWith('.ts') ? '../../dist/worker/db-load-runner.js' : './db-load-runner.js';
+    return new URL(runnerFileName, import.meta.url);
+}
+
 class DbLoadWorker {
     dbName: string;
     group_id: string;
@@ -19,15 +28,23 @@ class DbLoadWorker {
 
     start: () => void = () => {
         this.thread = new Worker(
-            new URL('./db-load-runner.js', import.meta.url), { workerData: { dbName: this.dbName, group_id: this.group_id, id: this.id, durationMs: this.durationMs } }
+            getRunnerUrl(),
+            {
+                workerData: { dbName: this.dbName, group_id: this.group_id, id: this.id, durationMs: this.durationMs }
+            }
         );
 
         this.thread.on('message', (message) => {
             console.log(`Worker ${this.id} message:`, message);
 
-            if (message.type === 'done') {
+            if (message.type === 'done' || message.type === 'error') {
                 this.onDone();
             }
+        });
+
+        this.thread.on('error', (error: Error) => {
+            console.error(`Worker ${this.id} error:`, error.message);
+            this.onDone();
         });
     }
 

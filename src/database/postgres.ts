@@ -58,11 +58,14 @@ class PostgresDB {
                 max: 1
             });
 
-            // 최초 연결 시도하여, 미리 연결 열어두기
-            await this.pool.query('SELECT 1').catch((error) => {
+            try {
+                // 최초 연결 시도하여, 미리 연결 열어두기
+                await this.pool.query('SELECT 1');
+            } catch (error) {
                 console.error('Failed to connect to PostgreSQL:', error);
                 this.pool = null; // 연결 실패 시 pool 초기화
-            });
+                throw error;
+            }
         }
     }
 }

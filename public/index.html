@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TS DB Load Lab</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>TS DB Load Lab</h1>
+        <p id="connectionStatus">API 연결 확인 중</p>
+      </div>
+      <div class="status-strip" aria-label="worker summary">
+        <span><strong id="totalWorkers">0</strong> workers</span>
+        <span><strong id="runningManagers">0</strong> running</span>
+        <span><strong id="sampleTotal">0</strong> rows</span>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="control-panel" aria-label="load test controls">
+        <form id="createForm" class="form-stack">
+          <label>
+            <span>Database</span>
+            <select id="dbName" name="dbName">
+              <option value="postgres">PostgreSQL</option>
+              <option value="mysql">MySQL</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Workers</span>
+            <input id="numWorkers" name="numWorkers" type="number" min="1" max="64" value="4">
+          </label>
+
+          <label>
+            <span>Duration seconds</span>
+            <input id="duration" name="duration" type="number" min="1" max="3600" value="20">
+          </label>
+
+          <button type="submit" class="primary-action">Create test</button>
+        </form>
+
+        <div class="selected-panel">
+          <span class="eyebrow">Selected test</span>
+          <strong id="selectedTitle">None</strong>
+          <p id="selectedMeta">Create or select a worker manager.</p>
+          <div class="button-row">
+            <button id="startButton" type="button">Start</button>
+            <button id="stopButton" type="button">Stop</button>
+            <button id="cleanButton" type="button">Clean</button>
+            <button id="deleteButton" type="button" class="danger-action">Delete</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="monitor-stage" aria-label="load test animation">
+        <canvas id="loadCanvas" width="1120" height="720"></canvas>
+        <div class="stage-metrics">
+          <div>
+            <span>Active managers</span>
+            <strong id="activeManagers">0</strong>
+          </div>
+          <div>
+            <span>Elapsed</span>
+            <strong id="elapsedTime">0s</strong>
+          </div>
+          <div>
+            <span>Database</span>
+            <strong id="activeDatabase">postgres</strong>
+          </div>
+        </div>
+      </section>
+
+      <aside class="data-panel" aria-label="worker and database data">
+        <section>
+          <div class="panel-heading">
+            <h2>Worker Managers</h2>
+            <button id="refreshButton" type="button">Refresh</button>
+          </div>
+          <div id="workerList" class="worker-list"></div>
+        </section>
+
+        <section>
+          <div class="panel-heading">
+            <h2>Distribution</h2>
+            <span id="distributionLabel">postgres</span>
+          </div>
+          <div id="distributionList" class="distribution-list"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

@@ -5,6 +5,10 @@
 
 import PostgresDB from './postgres.js';
 
+export async function resetDatabaseOnStartup(): Promise<void> {
+    await PostgresDB.resetDatabaseOnStartup();
+}
+
 export async function getDistribution(dbName: string): Promise<{ group_id: string, count: number }[]> {
     if (dbName === 'postgres') {
         return await PostgresDB.getDistribution();

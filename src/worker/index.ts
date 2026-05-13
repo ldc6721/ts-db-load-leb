@@ -48,13 +48,13 @@ export function getWorkerManagerList(): WorkerManagerInfo[] {
  * worker manager 업데이트
  * @returns 
  */
-export function updateWorkerManager(workerManagerId: string, numWorkers: number, dbName: string, duration: number): boolean {
+export async function updateWorkerManager(workerManagerId: string, numWorkers: number, dbName: string, duration: number): Promise<boolean> {
     const workerManager = getWorkerManager(workerManagerId);
     if (!workerManager) {
         return false;
     }
 
-    workerManager.update(numWorkers, dbName, duration);
+    await workerManager.update(numWorkers, dbName, duration);
     return true;
 }
 
@@ -93,14 +93,14 @@ export function stopWorkerManager(workerManagerId: string): boolean {
  * @param workerManagerId 
  * @returns 
  */
-export function cleanWorkerManager(workerManagerId: string): boolean {
+export async function cleanWorkerManager(workerManagerId: string): Promise<boolean> {
     const workerManager = getWorkerManager(workerManagerId);
     if (!workerManager) {
         return false;
     }
 
     workerManager.stop();
-    workerManager.clean();
+    await workerManager.clean();
     return true;
 }
 
@@ -108,14 +108,14 @@ export function cleanWorkerManager(workerManagerId: string): boolean {
  * worker manager 삭제
  * @returns 
  */
-export function deleteWorkerManager(workerManagerId: string): boolean {
+export async function deleteWorkerManager(workerManagerId: string): Promise<boolean> {
     const workerManager = getWorkerManager(workerManagerId);
     if (!workerManager) {
         return false;
     }
 
     workerManager.stop();
-    workerManager.clean();
+    await workerManager.clean();
     workerManagerMap.delete(workerManagerId);
     return true;
 }

@@ -41,7 +41,7 @@ router.post('/', (req: Request, res: Response) => {
  * Request Body: { workerManagerId: string, numWorkers: number, dbName: string, duration: number }
  * Response: { message: string }
  */
-router.put('/', (req: Request, res: Response) => {
+router.put('/', async (req: Request, res: Response) => {
     const { workerManagerId, numWorkers, dbName, duration } = req.body;
 
     if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
@@ -57,7 +57,7 @@ router.put('/', (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Invalid duration' });
     }
     
-    const success = updateWorkerManager(workerManagerId, numWorkers, dbName, duration);
+    const success = await updateWorkerManager(workerManagerId, numWorkers, dbName, duration);
     if (!success) {
         return res.status(404).json({ message: 'Worker manager not found' });
     }
@@ -113,14 +113,14 @@ router.put('/stop', (req: Request, res: Response) => {
  * Response: { message: string }
  * worker manager 리소스 정리
  */
-router.put('/clean', (req: Request, res: Response) => {
+router.put('/clean', async (req: Request, res: Response) => {
     const { workerManagerId } = req.body;
 
     if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
         return res.status(400).json({ message: 'Invalid worker manager ID' });
     }
 
-    const success = cleanWorkerManager(workerManagerId);
+    const success = await cleanWorkerManager(workerManagerId);
     if (!success) {
         return res.status(404).json({ message: 'Worker manager not found' });
     }
@@ -134,14 +134,14 @@ router.put('/clean', (req: Request, res: Response) => {
  * Response: { message: string }
  * worker manager 삭제
  */
-router.delete('/', (req: Request, res: Response) => {
+router.delete('/', async (req: Request, res: Response) => {
     const { workerManagerId } = req.body;
 
     if (typeof workerManagerId !== 'string' || workerManagerId.trim() === '') {
         return res.status(400).json({ message: 'Invalid worker manager ID' });
     }
     
-    const success = deleteWorkerManager(workerManagerId);
+    const success = await deleteWorkerManager(workerManagerId);
     if (!success) {
         return res.status(404).json({ message: 'Worker manager not found' });
     }

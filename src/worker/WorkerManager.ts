@@ -41,9 +41,14 @@ class WorkerManager {
      * start all 
      */
     start: () => void = () => {
-        if (this.status === WorkerManagerStatus.RUNNING) {
+        if (this.status === WorkerManagerStatus.RUNNING || this.status === WorkerManagerStatus.CLEANING) {
             // 이미 실행 중인 경우, 중복 실행 방지
             return;
+        }
+
+        // start 시점에 worker가 존재하지 않는 경우, worker 생성
+        if (this.workers.length === 0) {
+            this.createWorkers();
         }
 
         this.elapsedTime = 0;
@@ -85,13 +90,13 @@ class WorkerManager {
     /**
      * update worker
      */
-    update: (numWorkers: number, dbName: string, duration: number) => void = (numWorkers: number, dbName: string, duration: number) => {
+    update: (numWorkers: number, dbName: string, duration: number) => Promise<void> = async (numWorkers: number, dbName: string, duration: number) => {
         this.refreshAccessTime();
 
         // worker 정보 업데이트 전, 기존 worker가 존재한다면 리소스 정리
         if (this.workers.length > 0) {
             this.stop();
-            this.clean();
+            await this.clean();
         }
 
         // worker 정보 업데이트
@@ -110,12 +115,12 @@ class WorkerManager {
     /**
      * clean all worker resources
      */
-    clean: () => void = () => {
+    clean: () => Promise<void> = async () => {
         this.refreshAccessTime();
 
         this.status = WorkerManagerStatus.CLEANING;
 
-        const promises = [];
+        const promises: Promise<void>[] = [];
         for (const worker of this.workers) {
             // worker 리소스 정리
             promises.push(worker.clean());
@@ -123,14 +128,16 @@ class WorkerManager {
 
         this.workers = [];
 
-        Promise.all(promises).then(() => {
+        await Promise.all(promises);
+
+        try {
             // db 리소스 정리. 안정성을 위해 worker 정리가 끝난 후에 db 리소스 정리
-            cleanUpSamples(this.dbName, this.id).catch((error: unknown) => {
-                console.error(`Error cleaning up samples for group_id ${this.id}:`, error instanceof Error ? error.message : 'Unknown error');
-            }).finally(() => {
-                this.status = WorkerManagerStatus.READY;
-            });
-        });
+            await cleanUpSamples(this.dbName, this.id);
+        } catch (error: unknown) {
+            console.error(`Error cleaning up samples for group_id ${this.id}:`, error instanceof Error ? error.message : 'Unknown error');
+        } finally {
+            this.status = WorkerManagerStatus.READY;
+        }
     }
 
     /**
@@ -175,12 +182,6 @@ class WorkerManager {
      * create workers
      */
     private createWorkers: () => void = () => {
-        // worker 생성 전, 이전 worker가 존재한다면 중지
-        if (this.workers.length > 0) {
-            this.stop();
-            this.clean();
-        }
-
         // worker 생성
         for (let i = 0; i < this.numWorkers; i++) {
             const worker = new DbLoadWorker(this.dbName, this.id, `${this.id}-worker-${i}`, this.durationMs, this.handleWorkerDone);
